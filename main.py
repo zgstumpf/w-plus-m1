@@ -38,7 +38,7 @@ class Key:
         """
         return f"Key(key='{self.key}', lastPressTimeWithoutRelease={self.lastPressTimeWithoutRelease}, totalTime={self.totalTime}s)"
 
-    def regenerateLastPressTime(self):
+    def regenerate_last_press_time(self):
         """
         Sets the Key's lastPressTimeWithoutRelease to the current time in seconds since the Epoch.
 
@@ -46,7 +46,7 @@ class Key:
         """
         self.lastPressTimeWithoutRelease = time.time()
 
-    def clearLastPressTime(self):
+    def clear_last_press_time(self):
         """
         Sets the Key's lastPressTimeWithoutRelease to None, signifying that the key has been released and is not being held down.
 
@@ -93,7 +93,7 @@ class Session:
             if keyInstance.is_unreleased():
                 return
 
-            keyInstance.regenerateLastPressTime()
+            keyInstance.regenerate_last_press_time()
 
     @classmethod
     def register_key_release(cls, key: str):
@@ -110,7 +110,7 @@ class Session:
         timeKeyWasHeldDown = time.time() - keyInstance.lastPressTimeWithoutRelease
         keyInstance.totalTime += timeKeyWasHeldDown
 
-        keyInstance.clearLastPressTime()
+        keyInstance.clear_last_press_time()
 
 
     @classmethod
@@ -158,6 +158,30 @@ class Session:
                 del cls.keyData['Keyctrl']
 
 
+    @classmethod
+    def to_json(cls) -> str:
+        """
+        Cleans up the session data and converts it to a JSON formatted string
+        """
+        # keyData dictionary stores key data repetitively. Example: {'a': Key(key='a', ...}
+        # This enables quick access during runtime, but all the meaningful data is in the dictionary values
+        data = list(cls.keyData.values())
+        print(data)
+
+        # Remove this property because it is not useful for data analysis and only used during runtime to calculate totalTime
+        for object in data:
+            del object.lastPressTimeWithoutRelease
+
+        # Convert list of objects to list of dicts
+        dataDict = [object.__dict__ for object in data]
+
+        # Finally convert to JSON formatted string
+        jsonData = json.dumps(dataDict)
+
+        return jsonData
+
+
+
 
 
 def on_click(_, __, button, pressed):
@@ -193,10 +217,13 @@ def save_data(signum, frame):
     Saves data from the current session to persistent storage.
     """
     print('Saving data...')
+
     session.remove_ctrl_c_keys()
-    pprint.pprint(session.keyData)
-    # with open("data.json", "w") as file:
-    #     json.dump(data, file)
+
+    with open("data.json", "w") as file:
+        json.dump(session.to_json(), file)
+
+    # End the program
     sys.exit(0)
 
 
