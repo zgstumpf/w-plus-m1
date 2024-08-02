@@ -4,6 +4,7 @@ import json
 import signal
 import sys
 import time
+import pprint
 
 # TODO:
 # keep track of how long each button is held down for
@@ -24,6 +25,15 @@ class Key:
     def clearLastPressTime(self):
         self.lastPressTimeWithoutRelease = None
 
+    def is_unreleased(self):
+        """
+        Returns True if key is currently being held down, False otherwise.
+        """
+        if self.lastPressTimeWithoutRelease is not None:
+            return True
+        else:
+            return False
+
 
 class Session:
     keyData = {}
@@ -34,30 +44,28 @@ class Session:
     @classmethod
     def register_key_press(cls, key: str):
         key = cls.normalize_key(key)
+
         if key not in cls.keyData:
             cls.keyData[key] = Key(key)
-            print(cls.keyData)
         else:
-            cls.keyData[key].regenerateLastPressTime()
-        print(key, 'registered press')
+            keyInstance = cls.keyData[key]
+            # When a key is held down, it constantly sends a stream of register_key_press actions
+            # Do not execute rest of this code if key is being held down
+            if keyInstance.is_unreleased():
+                return
+            
+            keyInstance.regenerateLastPressTime()
 
     @classmethod
     def register_key_release(cls, key: str):
-        # on release, key is not a simple str, it is something like <class 'pynput.keyboard._darwin.KeyCode'>
-        print('key in register for release:', key, type(key), str(key))
-        print('normal string stdout', 'a')
         key = cls.normalize_key(key)
-        print('key after normalizing', key, type(key))
-        print(cls.keyData)
-        print('keyData key type', type(list(cls.keyData.keys())[0]))
-        if key in cls.keyData:
-            print('key in keyData')
-        else:
-            print('key not in keyData')
-        key = cls.keyData[key] # BUG: KeyError: "'a'"
-        key.totalTime = key.totalTime + (time.time() - key.lastPressTimeWithoutRelease)
-        key.clearLastPressTime()
-        print(key, 'registered release')
+
+        # key should always be in keyData, since key can't be released without being pressed first
+        keyInstance = cls.keyData[key]
+
+        keyInstance.totalTime = keyInstance.totalTime + (time.time() - keyInstance.lastPressTimeWithoutRelease)
+
+        keyInstance.clearLastPressTime()
 
 
     @classmethod
@@ -91,7 +99,6 @@ def on_press(key):
     try:
         print('alphanumeric key {0} pressed'.format(
             key.char))
-        session.normalize_key(key.char)
         session.register_key_press(key.char)
     except AttributeError:
         print('special key {0} pressed'.format(
@@ -107,7 +114,7 @@ def on_release(key):
 # signum and frame are required arguments for signal handler callback function
 def save_data(signum, frame):
     print('persist data')
-    print(session.keyData)
+    pprint.pprint(session.keyData)
     # with open("data.json", "w") as file:
     #     json.dump(data, file)
     sys.exit(0)
@@ -129,3 +136,9 @@ mouse_listener.start()
 # These lines must be at end of file
 keyboard_listener.join()
 mouse_listener.join()
+
+
+
+
+# Bugs to think about pull request
+# 1. Stupid str conversion for some pynput types - converts to "'a'" instead of "a"
