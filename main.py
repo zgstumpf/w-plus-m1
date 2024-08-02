@@ -257,11 +257,15 @@ def on_release(key):
     session.register_key_release(key)
 
 
-# signum and frame are required arguments for signal handler callback function
 def save_data(signum, frame):
     """
     Saves data from the current session to persistent storage and ends the program.
     """
+    # signum and frame are required arguments for signal handler callback function,
+    # even if they are never used. They are put here so code editor doesn't
+    # complain about unaccessed parameters
+    signum, frame
+
     filepath = session.to_csv()
     print(f'Data saved at {filepath}')
 
