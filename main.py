@@ -100,7 +100,13 @@ class Session:
         Sets the name of the session.
         """
         timestamp = time.strftime("%d%b%Y_%H:%M:%S", time.localtime())
-        name += '_' + timestamp
+
+        if name:
+            # set name to user-defined name + underscore + timestamp
+            name += '_' + timestamp
+        else:
+            # set name to just timestamp
+            name = timestamp
 
         cls.name = name
 

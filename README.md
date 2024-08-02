@@ -6,7 +6,7 @@
     source venv/bin/activate
     pip install --upgrade pip
     pip cache purge
-    pip install pynput
+    pip install pynput matplotlib
     ```
 
 TEST FURTHER - It is unclear yet if installing from requirements.txt will work
