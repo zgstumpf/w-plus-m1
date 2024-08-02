@@ -1,6 +1,6 @@
 from pynput import mouse, keyboard
 
-import json
+import csv
 import signal
 import sys
 import time
@@ -159,26 +159,23 @@ class Session:
 
 
     @classmethod
-    def to_json(cls) -> str:
+    def to_csv(cls, filename: str):
         """
-        Cleans up the session data and converts it to a JSON formatted string
+        Cleans up the session data and stores it in a CSV file.
         """
         # keyData dictionary stores key data repetitively. Example: {'a': Key(key='a', ...}
         # This enables quick access during runtime, but all the meaningful data is in the dictionary values
         data = list(cls.keyData.values())
-        print(data)
 
         # Remove this property because it is not useful for data analysis and only used during runtime to calculate totalTime
         for object in data:
             del object.lastPressTimeWithoutRelease
 
-        # Convert list of objects to list of dicts
-        dataDict = [object.__dict__ for object in data]
-
-        # Finally convert to JSON formatted string
-        jsonData = json.dumps(dataDict)
-
-        return jsonData
+        with open(filename, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['key', 'totalTime'])
+            for object in data:
+                writer.writerow([object.key, object.totalTime])
 
 
 
@@ -219,9 +216,7 @@ def save_data(signum, frame):
     print('Saving data...')
 
     session.remove_ctrl_c_keys()
-
-    with open("data.json", "w") as file:
-        json.dump(session.to_json(), file)
+    session.to_csv('data.csv')
 
     # End the program
     sys.exit(0)
