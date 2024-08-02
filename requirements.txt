@@ -1,7 +1,25 @@
+# NOTE: Due to pynput using C extensions, pip install -r requirements.txt has been shown to fail.
+# You should follow the specific installation instructions in the README.
+# This file is meant to be referenced in case of installation issues.
+# This file is the output of pip freeze > requirements.txt on a working copy of the code.
+# Python 3.9.1
+# pip 24.2
+contourpy==1.2.1
+cycler==0.12.1
+fonttools==4.53.1
+importlib_resources==6.4.0
+kiwisolver==1.4.5
+matplotlib==3.9.1
+numpy==2.0.1
+packaging==24.1
+pillow==10.4.0
 pynput==1.7.7
 pyobjc-core==10.3.1
 pyobjc-framework-ApplicationServices==10.3.1
 pyobjc-framework-Cocoa==10.3.1
 pyobjc-framework-CoreText==10.3.1
 pyobjc-framework-Quartz==10.3.1
+pyparsing==3.1.2
+python-dateutil==2.9.0.post0
 six==1.16.0
+zipp==3.19.2

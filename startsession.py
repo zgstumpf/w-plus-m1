@@ -7,6 +7,8 @@ import os
 import time
 from typing import Dict
 
+from utils import print_wm1_intro
+
 
 class Key:
     """
@@ -284,7 +286,8 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, save_data)  # Ctrl+C
     signal.signal(signal.SIGTERM, save_data) # Termination signal
 
-    print("You are now using W+M1, a keyboard and mouse input tracker that runs in the background.\n")
+    print_wm1_intro()
+    print("-> You are about to start an input tracker session.\n")
 
     # Prepare session to store keyboard and mouse inputs in memory
     session = Session()
