@@ -3,12 +3,10 @@ from pynput import mouse, keyboard
 import csv
 import signal
 import sys
+import os
 import time
-import pprint
 from typing import Dict
 
-# TODO:
-# store this in persistent file, different file for each script session
 
 class Key:
     """
@@ -32,11 +30,13 @@ class Key:
         self.lastPressTimeWithoutRelease = time.time()
         self.totalTime = 0. # make float
 
+
     def __repr__(self):
         """
         Converts a Key instance in memory to a readable format.
         """
         return f"Key(key='{self.key}', lastPressTimeWithoutRelease={self.lastPressTimeWithoutRelease}, totalTime={self.totalTime}s)"
+
 
     def regenerate_last_press_time(self):
         """
@@ -46,6 +46,7 @@ class Key:
         """
         self.lastPressTimeWithoutRelease = time.time()
 
+
     def clear_last_press_time(self):
         """
         Sets the Key's lastPressTimeWithoutRelease to None, signifying that the key has been released and is not being held down.
@@ -53,6 +54,7 @@ class Key:
         Any calculations using lastPressTimeWithoutRelease must be performed before calling this method.
         """
         self.lastPressTimeWithoutRelease = None
+
 
     def is_unreleased(self):
         """
@@ -91,6 +93,7 @@ class Session:
         name = input('Enter session name, or press enter to skip: ')
         return name
 
+
     @classmethod
     def set_name(cls, name: str):
         """
@@ -100,6 +103,7 @@ class Session:
         name += '_' + timestamp
 
         cls.name = name
+
 
     @classmethod
     def register_key_press(cls, key: str):
@@ -118,6 +122,7 @@ class Session:
                 return
 
             keyInstance.regenerate_last_press_time()
+
 
     @classmethod
     def register_key_release(cls, key: str):
@@ -158,6 +163,7 @@ class Session:
 
         return key
 
+
     @classmethod
     def remove_ctrl_c_keys(cls):
         """
@@ -185,10 +191,10 @@ class Session:
     @classmethod
     def to_csv(cls):
         """
-        Cleans up the session data and stores it in a CSV file. Returns filename of final CSV file.
+        Cleans up the session data and stores it in a CSV file. Returns absolute filepath of final CSV file.
         """
         cls.remove_ctrl_c_keys()
-        
+
         # keyData dictionary stores key data repetitively. Example: {'a': Key(key='a', ...}
         # This enables quick access during runtime, but all the meaningful data is in the dictionary values
         data = list(cls.keyData.values())
@@ -197,9 +203,18 @@ class Session:
         for object in data:
             del object.lastPressTimeWithoutRelease
 
-        # Write session to CSV file
+        # Gets absolute path of directory of this script
+        project_directory = os.path.dirname(os.path.abspath(__file__))
+
+        # Plan to store data in 'data' directory within this project directory
+        target_directory = os.path.join(project_directory, 'data')
+        os.makedirs(target_directory, exist_ok=True)
+
         filename = f"{cls.name}.csv"
-        with open(filename, 'w', newline='') as file:
+        filepath = os.path.join(target_directory, filename)
+
+        # Write session to CSV file
+        with open(filepath, 'w', newline='') as file:
             writer = csv.writer(file)
 
             # Header row
@@ -209,9 +224,7 @@ class Session:
             for object in data:
                 writer.writerow([object.key, object.totalTime])
 
-        return filename
-
-
+        return filepath
 
 
 def on_click(_, __, button, pressed):
@@ -224,6 +237,7 @@ def on_click(_, __, button, pressed):
         # released
         session.register_key_release(button)
 
+
 def on_press(key):
     """
     Fires when a keyboard key is pressed down.
@@ -234,6 +248,7 @@ def on_press(key):
         # special keys dont have char attribute
         session.register_key_press(key)
 
+
 def on_release(key):
     """
     Fires when a keyboard key is released.
@@ -241,13 +256,14 @@ def on_release(key):
     # For some reason this does not need try except as in on_press()
     session.register_key_release(key)
 
+
 # signum and frame are required arguments for signal handler callback function
 def save_data(signum, frame):
     """
-    Saves data from the current session to persistent storage.
+    Saves data from the current session to persistent storage and ends the program.
     """
-    filename = session.to_csv()
-    print(f'Data saved in {filename}')
+    filepath = session.to_csv()
+    print(f'Data saved at {filepath}')
 
     # End the program
     sys.exit(0)
@@ -257,6 +273,8 @@ if __name__ == "__main__":
     # Register signal handlers to save data on Ctrl+C or termination
     signal.signal(signal.SIGINT, save_data)  # Ctrl+C
     signal.signal(signal.SIGTERM, save_data) # Termination signal
+
+    print("You are now using W+M1, a keyboard and mouse input tracker that runs in the background.\n")
 
     # Prepare session to store keyboard and mouse inputs in memory
     session = Session()
