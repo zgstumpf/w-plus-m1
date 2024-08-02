@@ -2,30 +2,30 @@ import matplotlib.pyplot as plt
 
 import os
 import csv
-from glob import glob
+import glob
 
 
-csvFiles = [os.path.basename(file) for file in glob("data/*.csv")]
+csvFiles = [os.path.basename(file) for file in glob.glob("data/*.csv")]
 """
 A list of filenames of files that are in the data directory and end in .csv.
 """
 
-horizontalLine = '-' * 40
+HORIZONTAL_LINE = '-' * 40
 
 print('Data files:')
-print(horizontalLine)
+print(HORIZONTAL_LINE)
 for filename in csvFiles:
     print(filename)
-print(horizontalLine)
+print(HORIZONTAL_LINE)
 
 file = input("Enter the filename you want to analyze: ").strip()
 if file not in csvFiles:
     raise FileNotFoundError(f"{file}")
 
 
+# Collect data from CSV file
 x = []
 y = []
-
 with open(os.path.join('data', file), 'r') as csvFile:
     reader = csv.reader(csvFile)
     next(reader, None) # skip header row
@@ -34,9 +34,10 @@ with open(os.path.join('data', file), 'r') as csvFile:
         x.append(row[0]) # key
         y.append(float(row[1])) # totalTime
 
-plt.bar(x, y, color = 'g', width = 0.72, label = "Keys")
-plt.xlabel('Key')
-plt.ylabel('Total Time')
+
+# Generate graph
+plt.bar(x, y, color = 'tab:blue', width = 0.72)
+plt.xlabel('Input')
+plt.ylabel('Total time (s)')
 plt.title('Results')
-plt.legend()
 plt.show()
