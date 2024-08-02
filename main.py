@@ -69,13 +69,37 @@ class Session:
     Represents a monitoring session capable of storing a user's keyboard and mouse inputs in memory.
     When the session ends, data is saved persistently for further analysis.
     """
+    name: str
 
     keyData: Dict[str, Key] = {}
     """
     Maps the string representation of a key to its Key instance tracked by the Session.
 
-    Example: {'a': Key('a', ...)}
+    Example: {'a': Key(key='a', ...)}
     """
+
+
+    @classmethod
+    def prompt_name(cls):
+        """
+        Prompts user for a name for the session.
+        """
+        print('When the session ends, its data will be saved to a file.')
+        print('You can give this session a name which will carry over to the filename.')
+        print('The current date will automatically be added to the file name.')
+
+        name = input('Enter session name, or press enter to skip: ')
+        return name
+
+    @classmethod
+    def set_name(cls, name: str):
+        """
+        Sets the name of the session.
+        """
+        timestamp = time.strftime("%d%b%Y_%H:%M:%S", time.localtime())
+        name += '_' + timestamp
+
+        cls.name = name
 
     @classmethod
     def register_key_press(cls, key: str):
@@ -159,10 +183,12 @@ class Session:
 
 
     @classmethod
-    def to_csv(cls, filename: str):
+    def to_csv(cls):
         """
-        Cleans up the session data and stores it in a CSV file.
+        Cleans up the session data and stores it in a CSV file. Returns filename of final CSV file.
         """
+        cls.remove_ctrl_c_keys()
+        
         # keyData dictionary stores key data repetitively. Example: {'a': Key(key='a', ...}
         # This enables quick access during runtime, but all the meaningful data is in the dictionary values
         data = list(cls.keyData.values())
@@ -171,12 +197,19 @@ class Session:
         for object in data:
             del object.lastPressTimeWithoutRelease
 
+        # Write session to CSV file
+        filename = f"{cls.name}.csv"
         with open(filename, 'w', newline='') as file:
             writer = csv.writer(file)
+
+            # Header row
             writer.writerow(['key', 'totalTime'])
+
+            # Data rows
             for object in data:
                 writer.writerow([object.key, object.totalTime])
 
+        return filename
 
 
 
@@ -213,10 +246,8 @@ def save_data(signum, frame):
     """
     Saves data from the current session to persistent storage.
     """
-    print('Saving data...')
-
-    session.remove_ctrl_c_keys()
-    session.to_csv('data.csv')
+    filename = session.to_csv()
+    print(f'Data saved in {filename}')
 
     # End the program
     sys.exit(0)
@@ -229,13 +260,15 @@ if __name__ == "__main__":
 
     # Prepare session to store keyboard and mouse inputs in memory
     session = Session()
+    name = session.prompt_name()
+    session.set_name(name)
 
     # Prepare input listeners
     keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     mouse_listener = mouse.Listener(on_click=on_click)
 
     # Start threads for input listeners, meaning they will begin listening for inputs
-    print('Tracking keyboard and mouse inputs... Ctrl + c to stop.')
+    print('Session started. Tracking keyboard and mouse inputs... Ctrl + c to stop.')
     keyboard_listener.start()
     mouse_listener.start()
 
