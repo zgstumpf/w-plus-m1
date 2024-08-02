@@ -16,3 +16,5 @@ pip install -r requirements.txt
     ```bash
     python3 main.py
     ```
+
+`ctrl + c` to end script
