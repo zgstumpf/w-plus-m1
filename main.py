@@ -5,6 +5,7 @@ import signal
 import sys
 import time
 import pprint
+from typing import Dict
 
 # TODO:
 # keep track of how long each button is held down for
@@ -36,7 +37,7 @@ class Key:
 
 
 class Session:
-    keyData = {}
+    keyData: Dict[str, Key] = {}
     """
     key (str): Key()
     """
@@ -53,7 +54,7 @@ class Session:
             # Do not execute rest of this code if key is being held down
             if keyInstance.is_unreleased():
                 return
-            
+
             keyInstance.regenerateLastPressTime()
 
     @classmethod
@@ -106,7 +107,7 @@ def on_press(key):
         session.register_key_press(key)
 
 def on_release(key):
-    # ???? does this need try except key.char like on_press?
+    # For some reason this does not need try except as in on_press()
     print('{0} released'.format(
         key))
     session.register_key_release(key)
@@ -119,23 +120,25 @@ def save_data(signum, frame):
     #     json.dump(data, file)
     sys.exit(0)
 
-# Register signal handlers to save data on Ctrl+C or termination
-signal.signal(signal.SIGINT, save_data)  # Ctrl+C
-signal.signal(signal.SIGTERM, save_data) # Termination signal
 
-session = Session()
+if __name__ == "__main__":
+    # Register signal handlers to save data on Ctrl+C or termination
+    signal.signal(signal.SIGINT, save_data)  # Ctrl+C
+    signal.signal(signal.SIGTERM, save_data) # Termination signal
 
-keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-mouse_listener = mouse.Listener(on_click=on_click)
+    session = Session()
 
-# Start threads
-keyboard_listener.start()
-mouse_listener.start()
+    keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+    mouse_listener = mouse.Listener(on_click=on_click)
 
-# Keep threads running until program is terminated
-# These lines must be at end of file
-keyboard_listener.join()
-mouse_listener.join()
+    # Start threads
+    keyboard_listener.start()
+    mouse_listener.start()
+
+    # Keep threads running until program is terminated
+    # These lines must be at end of file
+    keyboard_listener.join()
+    mouse_listener.join()
 
 
 
