@@ -119,7 +119,7 @@ class Session:
         Stores key press in memory. If key is already being tracked, resets the time it was last pressed.
         """
         key = cls.normalize_key(key)
-
+        print(key, 'pressed')
         if key not in cls.keyData:
             cls.keyData[key] = Key(key)
         else:
@@ -139,7 +139,7 @@ class Session:
         key is not being held down.
         """
         key = cls.normalize_key(key)
-
+        print(key, 'released')
         # key should always be in keyData, since key can't be released without being pressed first,
         # and pressing stores the key in keyData.
         keyInstance = cls.keyData[key]
@@ -162,9 +162,16 @@ class Session:
         key = str(key)
 
         # Sometimes converting a pynput object to a string produces a string like "'a'" (Note the 2 single quotation marks)
-        # To normalize this strange behavior, remove all non alphanumeric characters after converting to list
+        # Remove these single quotations if they exist, making sure to not remove the single quotation in a string such as
+        # "'", which means the user pressed the single quotation key
         chars = list(key)
-        chars = [char for char in chars if char.isalnum()]
+        print(f"{chars=}")
+        if len(chars) >= 3 and chars[0] == "'" and chars[-1] == "'":
+            chars = chars[1:-1]
+
+        # Fix bug: when ' is pressed, chars is ["'"] (correct), when ' released chars is ['"', "'", '"'] (incorrect)
+        if chars == ['"', "'", '"']:
+            chars = ["'"]
 
         # Convert back to string
         key = "".join(chars)
@@ -310,6 +317,7 @@ if __name__ == "__main__":
     keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     mouse_listener = mouse.Listener(on_click=on_click)
 
+    # TODO: put try/except here to save data if program crashes???
     # Start threads for input listeners, meaning they will begin listening for inputs
     print('Session started. Tracking keyboard and mouse inputs... Ctrl + c to stop.')
     keyboard_listener.start()
