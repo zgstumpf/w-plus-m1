@@ -196,11 +196,11 @@ class Session:
             if cKeyInstance.totalTime == 0:
                 del cls.keyData['c']
 
-        # Apply same concept to 'ctrl' key. In the code, it is represented as 'Keyctrl'.
-        if 'Keyctrl' in cls.keyData:
-            ctrlKeyInstance = cls.keyData['Keyctrl']
+        # Apply same concept to 'ctrl' key. In the code, it is represented as 'keyctrl' (after being lowercased).
+        if 'keyctrl' in cls.keyData:
+            ctrlKeyInstance = cls.keyData['keyctrl']
             if ctrlKeyInstance.totalTime == 0:
-                del cls.keyData['Keyctrl']
+                del cls.keyData['keyctrl']
 
 
     @classmethod
@@ -284,6 +284,8 @@ def save_data(signum, frame):
     # complain about unaccessed parameters
     signum, frame
 
+    import pprint
+    pprint.pprint(session.keyData)
     filepath = session.to_csv()
     print(f'Data saved at {filepath}')
 
