@@ -166,8 +166,15 @@ class Session:
         chars = list(key)
         chars = [char for char in chars if char.isalnum()]
 
-        # Finally, convert back to string
+        # Convert back to string
         key = "".join(chars)
+
+        # Lowercase string. This fixes bug where:
+        # 1. key 'a' is held down
+        # 2. key 'Keyshift' is held down, making anything pressed next capitalized
+        # 3. key 'a' is released, but it is registered as 'A'.
+        # So, 'A' was registered as released, but it was never pressed, leading to bug.
+        key = key.lower()
 
         return key
 
@@ -206,6 +213,9 @@ class Session:
         # keyData dictionary stores key data repetitively. Example: {'a': Key(key='a', ...}
         # This enables quick access during runtime, but all the meaningful data is in the dictionary values
         data = list(cls.keyData.values())
+
+        # Sort keys with most total time first. This ensures bars are sorted when data is graphed.
+        data.sort(key= lambda keyInstance: keyInstance.totalTime, reverse=True)
 
         # Remove this property because it is not useful for data analysis and only used during runtime to calculate totalTime
         for object in data:
