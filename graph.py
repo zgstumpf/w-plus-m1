@@ -10,7 +10,7 @@ from utils import print_wm1_intro
 
 if __name__ == "__main__":
     print_wm1_intro()
-    print("-> You are about to view a graph of the data from a session file.\n")
+    print("-> You are about to view a graph of the data from a session.\n")
 
     csvFiles: List[str] = [file for file in glob.glob("data/*.csv")]
     """
@@ -18,19 +18,19 @@ if __name__ == "__main__":
     """
 
     if len(csvFiles) == 0:
-        print('No files')
+        print('No sessions')
         sys.exit()
 
     # Sort by file modification time, latest to earliest.
     csvFiles.sort(key=lambda file: os.path.getmtime(file), reverse=True)
-    # Remove 'data/' prefix in each filename
-    csvFiles = [os.path.basename(file) for file in csvFiles]
+    # Remove 'data/' prefix and '.csv' suffix in each filename
+    csvFiles = [os.path.basename(file).removesuffix(".csv") for file in csvFiles]
 
 
     # Print file selection menu
     # ---------------------------------------------------------------
     HORIZONTAL_LINE = '-' * 40
-    print('Data files:')
+    print('Sessions:')
     print(HORIZONTAL_LINE)
     for filename in csvFiles:
         print(filename)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         # If there is only 1 file, automatically select it.
         file = csvFiles[0]
     else:
-        file = input("Enter the filename you want to analyze (you can copy and paste terminal text): ").strip()
+        file = input("Enter the session name you want to analyze (you can copy and paste terminal text): ").strip()
         if file not in csvFiles:
             raise FileNotFoundError(f"{file}")
     # ---------------------------------------------------------------
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------
     x = []
     y = []
-    with open(os.path.join('data', file), 'r') as csvFile:
+    with open(os.path.join('data', f"{file}.csv"), 'r') as csvFile:
         reader = csv.reader(csvFile)
         next(reader, None) # skip header row
 

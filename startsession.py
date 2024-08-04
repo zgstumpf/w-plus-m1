@@ -73,7 +73,7 @@ class Session:
     Represents a monitoring session capable of storing a user's keyboard and mouse inputs in memory.
     When the session ends, data is saved persistently for further analysis.
     """
-    name: str
+    name: str = None
 
     keyData: Dict[str, Key] = {}
     """
@@ -88,9 +88,9 @@ class Session:
         """
         Prompts user for a name for the session.
         """
-        print('When the session ends, its data will be saved to a file.')
-        print('You can give this session a name which will carry over to the filename.')
-        print('The current date will automatically be added to the file name.')
+        print('When the session ends, its data will be saved.')
+        print('You can give this session a name. ')
+        print('The current date and time will automatically be added to the file name.')
 
         name = input('Enter session name, or press enter to skip: ')
         return name
@@ -119,7 +119,7 @@ class Session:
         Stores key press in memory. If key is already being tracked, resets the time it was last pressed.
         """
         key = cls.normalize_key(key)
-        print(key, 'pressed')
+
         if key not in cls.keyData:
             cls.keyData[key] = Key(key)
         else:
@@ -139,7 +139,7 @@ class Session:
         key is not being held down.
         """
         key = cls.normalize_key(key)
-        print(key, 'released')
+
         # key should always be in keyData, since key can't be released without being pressed first,
         # and pressing stores the key in keyData.
         keyInstance = cls.keyData[key]
@@ -165,7 +165,7 @@ class Session:
         # Remove these single quotations if they exist, making sure to not remove the single quotation in a string such as
         # "'", which means the user pressed the single quotation key
         chars = list(key)
-        print(f"{chars=}")
+
         if len(chars) >= 3 and chars[0] == "'" and chars[-1] == "'":
             chars = chars[1:-1]
 
@@ -182,6 +182,14 @@ class Session:
         # 3. key 'a' is released, but it is registered as 'A'.
         # So, 'A' was registered as released, but it was never pressed, leading to bug.
         key = key.lower()
+        # ...
+        # Still have similar bug with non-alpha chars
+        # Example:
+        # key.shift pressed
+        # ? pressed
+        # key.shift released
+        # / released
+        # ERROR
 
         return key
 
@@ -282,19 +290,14 @@ def on_release(key):
     session.register_key_release(key)
 
 
-def save_data(signum, frame):
+def save_data(signum, frame): # signum and frame are required arguments for signal handler callback function, even if they are never used.
     """
     Saves data from the current session to persistent storage and ends the program.
     """
-    # signum and frame are required arguments for signal handler callback function,
-    # even if they are never used. They are put here so code editor doesn't
-    # complain about unaccessed parameters
-    signum, frame
-
-    import pprint
-    pprint.pprint(session.keyData)
-    filepath = session.to_csv()
-    print(f'Data saved at {filepath}')
+    # Only save data if the user got past the naming the session step.
+    if session.name:
+        session.to_csv()
+        print(f'Session data saved.')
 
     # End the program
     sys.exit(0)
@@ -333,3 +336,6 @@ if __name__ == "__main__":
 
 # Bugs to think about pull request
 # 1. Stupid str conversion for some pynput types - converts to "'a'" instead of "a"
+
+# todo: file analyze screen should call selection option sessions, dont include csv extension
+# todo: remove support for special characters to avoid capitalization issues?
