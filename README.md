@@ -4,6 +4,10 @@ A program that collects keyboard and mouse presses for frequency analysis.
 
 w+m1 runs in the background, so it can be active while you are using any application on your computer. After you end the monitoring session, the session data is saved to a file on your computer. You can use w+m1 to automatically generate a graph of the session data file.
 
+![Screenshot of results graph, with a bar chart for each input measuring its total time.](./screenshots/graph.png)
+
+![Screenshot of the program's start screen in a terminal.](./screenshots/startscreen.png)
+
 ## Install
 
 *Some installation steps may vary between different devices and operating systems.*
