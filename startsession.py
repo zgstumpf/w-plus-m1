@@ -331,11 +331,4 @@ if __name__ == "__main__":
     keyboard_listener.join()
     mouse_listener.join()
 
-
-
-
-# Bugs to think about pull request
-# 1. Stupid str conversion for some pynput types - converts to "'a'" instead of "a"
-
-# todo: file analyze screen should call selection option sessions, dont include csv extension
 # todo: remove support for special characters to avoid capitalization issues?
