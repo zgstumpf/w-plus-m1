@@ -90,7 +90,7 @@ class Session:
         """
         print('When the session ends, its data will be saved.')
         print('You can give this session a name. ')
-        print('The current date and time will automatically be added to the file name.')
+        print('The current date and time will automatically be added to the session name.')
 
         name = input('Enter session name, or press enter to skip: ')
         return name
