@@ -25,7 +25,7 @@ If a command starting with `python` doesn't work, try starting the command with 
     If you see a version number, you have Git installed. If you get an error, you need to [install Git](https://git-scm.com/downloads).
 1. Download w+m1 with Git. Run:
     ```bash
-    git clone https://github.com/zgstumpf/w+m1.git
+    git clone https://github.com/zgstumpf/w-plus-m1.git "w+m1"
     ```
 1. Change directories (cd) or "go inside" w+m1. Run:
    ```bash
